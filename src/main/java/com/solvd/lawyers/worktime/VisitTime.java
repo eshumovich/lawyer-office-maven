@@ -46,4 +46,13 @@ public class VisitTime {
     public void setVisitDateTime(LocalDateTime visitDateTime) {
         this.visitDateTime = visitDateTime;
     }
+
+    @Override
+    public String toString() {
+        return "VisitTime{" +
+                "minutes=" + minutes +
+                ", hours=" + hours +
+                ", visitDateTime=" + visitDateTime +
+                '}';
+    }
 }

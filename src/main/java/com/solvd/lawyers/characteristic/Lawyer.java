@@ -3,6 +3,7 @@ package com.solvd.lawyers.characteristic;
 import com.solvd.lawyers.Address;
 import com.solvd.lawyers.inheritance.Available;
 import com.solvd.lawyers.inheritance.Human;
+import com.solvd.lawyers.inheritance.ICheckStaff;
 import com.solvd.lawyers.inheritance.IIncreaseRating;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class Lawyer<T extends IIncreaseRating> extends Human<T> implements Available {
+public class Lawyer<T extends IIncreaseRating> extends Human<T> implements Available, ICheckStaff {
 
     private static final Logger LOGGER = LogManager.getLogger(Lawyer.class);
 
@@ -105,6 +106,11 @@ public class Lawyer<T extends IIncreaseRating> extends Human<T> implements Avail
 
     public void setSalary(BigDecimal salary) {
         this.salary = salary;
+    }
+
+    @Override
+    public boolean isLawyersPresent(Object o) {
+        return true;
     }
 }
 

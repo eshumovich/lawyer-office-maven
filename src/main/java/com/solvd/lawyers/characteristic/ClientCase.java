@@ -1,5 +1,6 @@
 package com.solvd.lawyers.characteristic;
 
+import com.solvd.lawyers.inheritance.IConfirm;
 import com.solvd.lawyers.inheritance.Work;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,7 +10,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Objects;
 
-public class ClientCase extends Work {
+public class ClientCase extends Work implements IConfirm {
 
     private static final Logger LOGGER = LogManager.getLogger(ClientCase.class);
 
@@ -25,11 +26,11 @@ public class ClientCase extends Work {
         LOGGER.info("Resolving of client case costs: " + getPrice());
     }
 
-    public void caseWaiting(LocalDate prevDate) {
+    public Integer caseWaiting(LocalDate prevDate) {
         LocalDate now = LocalDate.now();
         Period period = Period.between(prevDate, now);
-
         LOGGER.info("Event waiting for: years: " + period.getYears() + " , months: " + period.getMonths() + ", days: " + period.getDays());
+        return period.getYears() * 365 + period.getMonths() * 30 + period.getDays();
     }
 
     public String getDescription() {
@@ -58,5 +59,14 @@ public class ClientCase extends Work {
     @Override
     public int hashCode() {
         return Objects.hash(description);
+    }
+
+    @Override
+    public void confirmCase() {
+        if (getSeverity() == "ASAP") {
+            LOGGER.info("Confirm the case");
+        } else {
+            LOGGER.info("Case can wait");
+        }
     }
 }

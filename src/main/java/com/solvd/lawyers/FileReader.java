@@ -9,45 +9,48 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FileReader {
 
     private static final Logger LOGGER = LogManager.getLogger(ClientCase.class);
+    private static Map<String, Integer> wordsList;
 
-    public static void readFile() {
-
+    public static Map<String, Integer> countWords(String textFile) {
         try {
-            String content = FileUtils.readFileToString(new File("src/main/resources/Textfile.txt"), "UTF-8");
+            String content = FileUtils.readFileToString(new File(textFile), "UTF-8");
             String[] strings = content.toLowerCase().split("\\W");
-            Set<String> sdata = new HashSet<String>();
 
-            for (String val : strings) {
-                sdata.add(val);
-            }
+            Set<String> unigueWords = new HashSet<>();
+            Collections.addAll(unigueWords, strings);
+            wordsList = new HashMap<>();
 
-            Map<String, Integer> map = new HashMap<>();
-
-            for (String string : sdata) {
-                int i = StringUtils.countMatches(content.toLowerCase(), string);
-                map.put(string, i);
-            }
-
-            List<Map.Entry<Integer, String>> list = new ArrayList(map.entrySet());
-            Object[] a = map.entrySet().toArray();
-            Arrays.sort(a, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((Map.Entry<String, Integer>) o2).getValue()
-                            .compareTo(((Map.Entry<String, Integer>) o1).getValue());
-                }
-            });
-            for (Object e : a) {
-                LOGGER.info(((Map.Entry<String, Integer>) e).getKey() + " : "
-                        + ((Map.Entry<String, Integer>) e).getValue());
+            for (String word : unigueWords) {
+                int frequency = StringUtils.countMatches(content.toLowerCase(), word);
+                wordsList.put(word, frequency);
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e);
         }
 
+        return wordsList;
+    }
+
+    public static void writeSortedWordsToFile(String fileName) {
+        File file = new File(fileName);
+
+        Comparator<Integer> comparator = (o1, o2) -> o2.compareTo(o1);
+
+        List<String> sorted = wordsList.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(comparator))
+                .map((word) -> word.toString())
+                .collect(Collectors.toList());
+
+        try {
+            FileUtils.writeLines(file, sorted);
+        } catch (IOException e) {
+            LOGGER.error(e);
+        }
     }
 }

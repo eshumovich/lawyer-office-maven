@@ -7,15 +7,21 @@ import com.solvd.lawyers.worktime.VisitTime;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
+    private static final String TEXT_FILE = "src/main/resources/textFile.txt";
 
     public static void main(String[] args) {
         Address address = new Address("Spain", "Madrid", 10);
@@ -41,6 +47,12 @@ public class Main {
         lawyers.add(lawyer1);
         lawyers.add(lawyer2);
         lawyers.add(lawyer3);
+        lawyers.stream()
+                .map(lawyer -> lawyer.getRating() + 2)
+                .sorted()
+                .collect(Collectors.toList())
+                .forEach(rating -> LOGGER.info("New rating: " + rating));
+
         LOGGER.info("Lawyers size: " + lawyers.size());
 
         Staff staff = new Staff(lawyers);
@@ -59,6 +71,8 @@ public class Main {
 
         Client<? extends IIncreaseRating> client1 = new Client<>("Elton", divorce, BigDecimal.valueOf(1500));
         Client<? extends IIncreaseRating> client2 = new Client<>("Valera", aliments, BigDecimal.valueOf(1350));
+        Client<? extends IIncreaseRating> client3 = new Client<>("Vera", aliments, BigDecimal.valueOf(1050));
+
 
         LOGGER.info("----------------------------------");
         lawyer1.setSalary(BigDecimal.valueOf(150));
@@ -67,6 +81,12 @@ public class Main {
         List<Client<? extends IIncreaseRating>> clients = new ArrayList<>();
         clients.add(client1);
         clients.add(client2);
+        clients.add(client3);
+        clients.stream()
+                .filter(client -> client.getName() != null)
+                .peek(LOGGER::info)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Client doesn't exist"));
 
         VisitTime visit = new VisitTime(30, 2);
         LOGGER.info("Required time for the case: " + visit.totalMinutes() + " min");
@@ -79,6 +99,9 @@ public class Main {
         services.add(service1);
         services.add(service2);
         services.add(service3);
+        services.stream()
+                .peek(LOGGER::info)
+                .findFirst();
 
         LawyerOffice redClearing = new LawyerOffice("RedClearing",
                 LocalDate.of(2002, 2, 1), address, staff, clients, services);
@@ -122,10 +145,10 @@ public class Main {
         humans.add(client1);
         humans.add(client2);
         humans.add(lawyer3);
-        LOGGER.info(humans);
-        for(Human<?> human : humans) {
-            LOGGER.info("Finished the University");
-        }
+        humans.stream()
+                .skip(1)
+                .limit(1)
+                .forEach(human -> LOGGER.info(human.getName() + " Finished the University"));
 
         LOGGER.info("----------------------------------");
         LawyerOfficeUtils.print(redClearing, competitorLawyersOffice);
@@ -155,23 +178,18 @@ public class Main {
         CourtHouse<AbonementFullDay> courtHouse1 = new CourtHouse<>(address1);
         courtHouse1.setAccess(new AbonementFullDay());
 
-        Map<String, Client<? extends IIncreaseRating>> schedule = new HashMap<>();
-        redClearing.setSchedule(schedule);
-        schedule.put(client1.getClientCase().getDescription(), client1);
-        schedule.put(client2.getClientCase().getDescription(), client2);
-        redClearing.showSchedule();
-
         Building<?> building = new Building<>(new Address("Mongolia", "Ulan Bator", 15));
-        building.setFloor(Building.Floor.SECOND_FLOOR);
-        LOGGER.info(building.getFloor().getOpenDoor());
+        building.setSchemaBuilding(Building.SchemaBuilding.SECURITY_ROOM);
 
-        switch (building.getFloor()) {
-            case FIRST_FLOOR:
-                LOGGER.info("kick out visitors");
+        switch (building.getSchemaBuilding()) {
+            case CHECKPOINT:
+                LOGGER.info("visitor registered");
                 break;
-            case SECOND_FLOOR:
-                LOGGER.info("\n" +
-                        "let workers in");
+            case SECURITY_ROOM:
+                LOGGER.info("inspection of personal belongings");
+                break;
+            case COURTROOM:
+                LOGGER.info("hearing in progress");
                 break;
             default:
                 break;
@@ -189,13 +207,49 @@ public class Main {
         courtHouse.setDayOfWeek(CourtHouse.DayOfWeek.SUNDAY);
         LOGGER.info(courtHouse.getDayOfWeek());
 
-        if(courtHouse.getDayOfWeek() == CourtHouse.DayOfWeek.SATURDAY || courtHouse.getDayOfWeek() == CourtHouse.DayOfWeek.SUNDAY) {
+        if (courtHouse.getDayOfWeek() == CourtHouse.DayOfWeek.SATURDAY || courtHouse.getDayOfWeek() == CourtHouse.DayOfWeek.SUNDAY) {
             LOGGER.info("Courthouse is closed");
         } else {
             LOGGER.info("Courthouse is open");
         }
 
-        FileReader.readFile();
+        FileReader.countWords(TEXT_FILE);
+        FileReader.writeSortedWordsToFile("newFIle.txt");
+
+        divorce.confirmCase();
+
+        ICheckClients<Client> checkClients = client -> client.isClientArrived(clients);
+        redClearing.meetClient(checkClients);
+
+        ICheckStaff<Lawyer<? extends IIncreaseRating>> checkStaff = x -> x.isLawyersPresent(lawyers);
+        staff.getAvailable(checkStaff);
+
+        try {
+            Class<?> addressClass = Class.forName("com.solvd.lawyers.Address");
+            LOGGER.info(addressClass);
+
+            Class<? extends Address> addressObjClass = address1.getClass();
+            LOGGER.info(addressObjClass);
+
+            Field[] declaredFields = addressObjClass.getDeclaredFields();
+            Arrays.stream(declaredFields)
+                    .forEach(LOGGER::info);
+
+            Field countryField = addressObjClass.getDeclaredField("country");
+            LOGGER.info(countryField);
+
+            Field[] fields = addressObjClass.getFields();
+            Arrays.stream(fields)
+                    .forEach(LOGGER::info);
+
+            Constructor<?> addressConstructor = addressClass.getDeclaredConstructor(String.class, String.class, Integer.class);
+            Address address5 = (Address) addressConstructor.newInstance("Belarus", "Minsk", 1);
+            LOGGER.info(address5);
+            Method getCountry = addressClass.getDeclaredMethod("getCountry");
+            LOGGER.info(getCountry.invoke(address5));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void printStars(Human<RatingStar> human) {

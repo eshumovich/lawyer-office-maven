@@ -1,11 +1,10 @@
 package com.solvd.lawyers;
 
 import com.solvd.lawyers.characteristic.Client;
+import com.solvd.lawyers.characteristic.Lawyer;
 import com.solvd.lawyers.characteristic.Service;
 import com.solvd.lawyers.characteristic.Staff;
-import com.solvd.lawyers.inheritance.IIncreaseRating;
-import com.solvd.lawyers.inheritance.Organization;
-import com.solvd.lawyers.inheritance.Printable;
+import com.solvd.lawyers.inheritance.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LawyerOffice extends Organization implements Printable {
 
@@ -52,25 +52,20 @@ public class LawyerOffice extends Organization implements Printable {
         }
     }
 
-    public int countClients() {
-        int counter = 0;
-        for (Client<? extends IIncreaseRating> client : clients) {
-            LOGGER.info("Client: " + client.getName() + " " + client.getClientCase() );
-            counter++;
-        }
+    public AtomicInteger countClients() {
+        AtomicInteger counter = new AtomicInteger(0);
+
+        clients.stream()
+                .forEach(client -> {
+                    LOGGER.info("Client: " + client.getName() + " " + client.getClientCase());
+                    counter.getAndIncrement();
+                });
         return counter;
     }
 
     public void showServices() {
-        for(Service service : services) {
-            LOGGER.info("Show service: " + service.getDescriptionOfService());
-        }
-    }
-
-    public void showSchedule() {
-        for (Map.Entry<String, Client<? extends IIncreaseRating>> entry : this.schedule.entrySet()) {
-            LOGGER.info(entry.getKey() + "  :  " + entry.getValue());
-        }
+        services.stream()
+                .forEach(service -> LOGGER.info("Show service: " + service.getDescriptionOfService()));
     }
 
     @Override
@@ -105,7 +100,7 @@ public class LawyerOffice extends Organization implements Printable {
         return Objects.hash(address, staff, services, clients);
     }
 
-    public Address getAddress(){
+    public Address getAddress() {
         return address;
     }
 
@@ -143,6 +138,16 @@ public class LawyerOffice extends Organization implements Printable {
 
     public void setSchedule(Map<String, Client<? extends IIncreaseRating>> schedule) {
         this.schedule = schedule;
+    }
+
+    public void meetClient(ICheckClients<Client> client) {
+        boolean isClient = clients.stream()
+                .allMatch(client::isClientArrived);
+        if (isClient) {
+            LOGGER.info("Client will be in 10 minutes");
+        } else {
+            LOGGER.info("Meeting is canceled");
+        }
     }
 }
 

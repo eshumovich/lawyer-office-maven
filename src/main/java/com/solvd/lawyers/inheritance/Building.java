@@ -8,19 +8,19 @@ public class Building<A> implements Openable {
 
     private Address address;
     private A access;
-    private Floor floor;
+    private SchemaBuilding schemaBuilding;
 
-    public enum Floor {
-        FIRST_FLOOR("cafe"), SECOND_FLOOR("office");
+    public enum SchemaBuilding {
+        CHECKPOINT("checkpoint"), SECURITY_ROOM("security-room"), COURTROOM("courtroom");
 
-        private final String openDoor;
+        private final String roomType;
 
-        Floor(String openDoor){
-            this.openDoor = openDoor;
+        SchemaBuilding(String openDoor) {
+            this.roomType = openDoor;
         }
 
-        public String getOpenDoor() {
-            return openDoor;
+        public String getRoomType() {
+            return roomType;
         }
     }
 
@@ -43,13 +43,13 @@ public class Building<A> implements Openable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Building building = (Building) o;
-        return Objects.equals(address, building.address);
+        Building<?> building = (Building<?>) o;
+        return Objects.equals(address, building.address) && Objects.equals(access, building.access) && schemaBuilding == building.schemaBuilding;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(address);
+        return Objects.hash(address, access, schemaBuilding);
     }
 
     public Address getAddress() {
@@ -68,12 +68,12 @@ public class Building<A> implements Openable {
         this.access = access;
     }
 
-    public Floor getFloor() {
-        return floor;
+    public SchemaBuilding getSchemaBuilding() {
+        return schemaBuilding;
     }
 
-    public void setFloor(Floor floor) {
-        this.floor = floor;
+    public void setSchemaBuilding(SchemaBuilding schemaBuilding) {
+        this.schemaBuilding = schemaBuilding;
     }
 }
 

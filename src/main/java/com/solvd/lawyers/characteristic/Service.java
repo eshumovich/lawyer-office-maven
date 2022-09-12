@@ -1,5 +1,6 @@
 package com.solvd.lawyers.characteristic;
 
+import com.solvd.lawyers.inheritance.IConfirm;
 import com.solvd.lawyers.inheritance.Work;
 import com.solvd.lawyers.worktime.VisitTime;
 import org.apache.logging.log4j.LogManager;

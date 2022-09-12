@@ -2,6 +2,7 @@ package com.solvd.lawyers.characteristic;
 
 import com.solvd.lawyers.inheritance.Billable;
 import com.solvd.lawyers.inheritance.Human;
+import com.solvd.lawyers.inheritance.ICheckClients;
 import com.solvd.lawyers.inheritance.IIncreaseRating;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class Client<T extends IIncreaseRating> extends Human<T> implements Billable {
+public class Client<T extends IIncreaseRating> extends Human<T> implements Billable, ICheckClients {
 
     private static final Logger LOGGER = LogManager.getLogger(Client.class);
 
@@ -72,6 +73,11 @@ public class Client<T extends IIncreaseRating> extends Human<T> implements Billa
     @Override
     public int hashCode() {
         return Objects.hash(clientCase, money);
+    }
+
+    @Override
+    public boolean isClientArrived(Object o) {
+        return false;
     }
 }
 
