@@ -218,7 +218,7 @@ public class Main {
 
         divorce.confirmCase();
 
-        ICheckClients<Client> checkClients = client -> client.isClientArrived(clients);
+        ICheckClients<Client<? extends IIncreaseRating>> checkClients = client -> client.isClientArrived(clients);
         redClearing.meetClient(checkClients);
 
         ICheckStaff<Lawyer<? extends IIncreaseRating>> checkStaff = x -> x.isLawyersPresent(lawyers);

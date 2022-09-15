@@ -140,7 +140,7 @@ public class LawyerOffice extends Organization implements Printable {
         this.schedule = schedule;
     }
 
-    public void meetClient(ICheckClients<Client> client) {
+    public void meetClient(ICheckClients<Client<? extends IIncreaseRating>> client) {
         boolean isClient = clients.stream()
                 .allMatch(client::isClientArrived);
         if (isClient) {
