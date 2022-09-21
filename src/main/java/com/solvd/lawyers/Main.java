@@ -1,6 +1,8 @@
 package com.solvd.lawyers;
 
 import com.solvd.lawyers.characteristic.*;
+import com.solvd.lawyers.connectionPool.Connection;
+import com.solvd.lawyers.connectionPool.ConnectionPool;
 import com.solvd.lawyers.exception.NameInvalidException;
 import com.solvd.lawyers.inheritance.*;
 import com.solvd.lawyers.worktime.VisitTime;
@@ -9,19 +11,22 @@ import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class Main {
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
     private static final String TEXT_FILE = "src/main/resources/textFile.txt";
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(5);
 
     public static void main(String[] args) {
         Address address = new Address("Spain", "Madrid", 10);
@@ -250,6 +255,38 @@ public class Main {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        ConnectionPool connectionPool = ConnectionPool.getInstance(5);
+
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                Connection connection = connectionPool.getConnection();
+                connection.create();
+                connectionPool.releaseConnection(connection);
+            }).start();
+        }
+
+        CompletableFuture<String> completableFuture1 = CompletableFuture.supplyAsync(address1::getCity, EXECUTOR_SERVICE);
+        CompletableFuture<String> completableFuture2 = CompletableFuture.supplyAsync(address2::getCity, EXECUTOR_SERVICE);
+
+        List<CompletableFuture<String>> list = Arrays.asList(completableFuture1, completableFuture2);
+
+        EXECUTOR_SERVICE.execute(() -> {
+            if (completableFuture1.isDone()) {
+                list.forEach(i -> list.set(list.indexOf(i), i.thenApplyAsync(n -> "City: " + n)));
+                list.forEach(i -> LOGGER.info(i.join()));
+            }
+        });
+
+        Connection connection = new Connection();
+        CompletableFuture<Void> create = CompletableFuture.runAsync(connection::create, EXECUTOR_SERVICE);
+        CompletableFuture<Void> read = CompletableFuture.runAsync(connection::read, EXECUTOR_SERVICE);
+        CompletableFuture<Void> update = CompletableFuture.runAsync(connection::update, EXECUTOR_SERVICE);
+        CompletableFuture<Void> delete = CompletableFuture.runAsync(connection::delete, EXECUTOR_SERVICE);
+
+        CompletableFuture<Void> methods = CompletableFuture.allOf(create, read, update, delete)
+                .thenRunAsync(() -> LOGGER.info("Finish"));
+        EXECUTOR_SERVICE.shutdown();
     }
 
     public static void printStars(Human<RatingStar> human) {
