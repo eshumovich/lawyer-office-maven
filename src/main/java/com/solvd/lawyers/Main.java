@@ -1,8 +1,8 @@
 package com.solvd.lawyers;
 
 import com.solvd.lawyers.characteristic.*;
-import com.solvd.lawyers.connectionPool.Connection;
-import com.solvd.lawyers.connectionPool.ConnectionPool;
+import com.solvd.lawyers.connectionpool.Connection;
+import com.solvd.lawyers.connectionpool.ConnectionPool;
 import com.solvd.lawyers.exception.NameInvalidException;
 import com.solvd.lawyers.inheritance.*;
 import com.solvd.lawyers.worktime.VisitTime;
@@ -262,6 +262,8 @@ public class Main {
             new Thread(() -> {
                 Connection connection = connectionPool.getConnection();
                 connection.create();
+                connection.read();
+                connection.update();
                 connectionPool.releaseConnection(connection);
             }).start();
         }
@@ -279,6 +281,7 @@ public class Main {
         });
 
         Connection connection = new Connection();
+
         CompletableFuture<Void> create = CompletableFuture.runAsync(connection::create, EXECUTOR_SERVICE);
         CompletableFuture<Void> read = CompletableFuture.runAsync(connection::read, EXECUTOR_SERVICE);
         CompletableFuture<Void> update = CompletableFuture.runAsync(connection::update, EXECUTOR_SERVICE);
