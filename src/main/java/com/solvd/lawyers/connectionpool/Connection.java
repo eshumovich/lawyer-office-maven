@@ -1,4 +1,4 @@
-package com.solvd.lawyers.connectionPool;
+package com.solvd.lawyers.connectionpool;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +10,7 @@ public class Connection {
     public void create() {
         LOGGER.info("Created");
         try {
-            Thread.sleep(300);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             LOGGER.error(e);
         }
@@ -19,7 +19,7 @@ public class Connection {
     public void read() {
         LOGGER.info("Reading");
         try {
-            Thread.sleep(300);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             LOGGER.error(e);
         }
@@ -28,7 +28,7 @@ public class Connection {
     public void update() {
         LOGGER.info("Update");
         try {
-            Thread.sleep(300);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             LOGGER.error(e);
         }
@@ -37,7 +37,7 @@ public class Connection {
     public void delete() {
         LOGGER.info("Deleted");
         try {
-            Thread.sleep(300);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             LOGGER.error(e);
         }
